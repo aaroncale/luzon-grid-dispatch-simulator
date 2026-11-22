@@ -52,10 +52,22 @@ css <- "
 body{background:radial-gradient(1200px 600px at 10% -10%,#12263f 0%,#0b1220 55%)!important}
 /* floating particle background canvas */
 #particle-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
-/* keep header, sidebar, and main content layered cleanly above particles */
-.bslib-sidebar-layout,.bslib-page-title,header,.main{position:relative;z-index:1}
-/* translucent rounded cards and sidebar */
-.card,.bslib-sidebar-layout>.sidebar{background:rgba(17,26,43,.82)!important;backdrop-filter:blur(4px);border:1px solid #223049!important;border-radius:14px}
+/* keep layout wrappers transparent above the particle canvas */
+.bslib-sidebar-layout,.bslib-page-title,header,.main{position:relative;z-index:1;background:transparent!important}
+/* sidebar + outer Results / Simplex Tableau container (navset_card_tab) */
+.bslib-sidebar-layout>.sidebar,.card{
+  background:rgba(17,26,43,.58)!important;
+  border:1px solid #223049!important;
+  border-radius:14px;
+  --bs-card-bg:transparent;
+  --bs-card-cap-bg:rgba(17,26,43,.25);
+}
+/* inner chart/table cards inside Results so stacked layers don't turn solid */
+.card .card{background:rgba(17,26,43,.42)!important}
+/* transparent tab bar and tab panels inside navset_card_tab */
+.card-header,.card-body,.tab-content,.tab-pane{background-color:transparent!important}
+.card-header{border-bottom:1px solid #223049!important}
+.nav-tabs .nav-link.active{background-color:rgba(56,189,248,.14)!important;border-color:#223049 #223049 transparent!important;color:#38bdf8!important}
 /* title bar with icon */
 .brand{display:flex;align-items:center;gap:.6rem;font-family:'Space Grotesk';font-weight:700;font-size:3.15rem}
 .brand i{color:#38bdf8}.sub{color:#94a3b8;font-size:.8rem;margin-bottom:1rem;text-align:justify}
@@ -63,7 +75,7 @@ body{background:radial-gradient(1200px 600px at 10% -10%,#12263f 0%,#0b1220 55%)
 .btn-run{width:100%;font-weight:600;letter-spacing:.05em;background:linear-gradient(90deg,#0ea5e9,#6366f1);border:0}
 .btn-run:hover{filter:brightness(1.12)}
 /* KPI boxes */
-.bslib-value-box{background:linear-gradient(135deg,rgba(19,35,60,.85),rgba(15,26,46,.85))!important;backdrop-filter:blur(4px);border:1px solid #223049!important}
+.bslib-value-box{background:linear-gradient(135deg,rgba(19,35,60,.62),rgba(15,26,46,.62))!important;border:1px solid #223049!important}
 /* OPTIMAL / INFEASIBLE pill */
 .status-pill{display:inline-block;padding:.2rem .7rem;border-radius:99px;font-size:.75rem;font-weight:600}
 .ok{background:#064e3b;color:#6ee7b7}.bad{background:#7f1d1d;color:#fca5a5}
