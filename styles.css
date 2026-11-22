@@ -1,0 +1,68 @@
+/* colour variables: change here to re-theme everything */
+:root{--bg:#0b1220;--card:#111a2b;--line:#223049;--fg:#e2e8f0;--mut:#94a3b8;--acc:#38bdf8;--acc2:#6366f1;--ok:#34d399;--bad:#f87171}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,sans-serif;color:var(--fg);background:radial-gradient(1200px 600px at 10% -10%,#12263f,var(--bg) 55%) fixed;min-height:100vh}
+/* page grid: 320px sidebar + flexible main */
+.layout{display:grid;grid-template-columns:320px 1fr;gap:20px;padding:20px;max-width:1500px;margin:auto}
+/* stack sidebar above content on narrow screens */
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+/* rounded translucent panel used everywhere */
+.card{background:rgba(17,26,43,.85);border:1px solid var(--line);border-radius:14px;padding:18px}
+/* sidebar stays visible while scrolling */
+.side{position:sticky;top:20px;align-self:start}
+/* title */
+.brand{font:700 1.25rem "Space Grotesk";display:flex;gap:.5rem;align-items:center;margin:0}
+.sub{color:var(--mut);font-size:.8rem;margin:4px 0 18px}
+/* small uppercase section labels */
+h4{font:600 .72rem Inter;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:18px 0 10px}
+/* plant-group checkbox chips */
+.chip{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;cursor:pointer;font-size:.88rem}
+/* selected chip highlight */
+.chip.on{border-color:var(--acc);background:rgba(56,189,248,.08)}
+.dot{width:10px;height:10px;border-radius:50%}
+.row{display:flex;gap:8px}
+/* generic button */
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--fg);padding:7px 12px;font-size:.8rem}
+button:hover{border-color:var(--acc)}
+/* RUN SIMULATION button */
+.run{width:100%;margin-top:18px;padding:12px;font-weight:600;letter-spacing:.06em;border:0;background:linear-gradient(90deg,#0ea5e9,var(--acc2));font-size:.9rem}
+.run:disabled{opacity:.6}
+/* number input */
+input[type=number]{width:100%;background:#0b1424;border:1px solid var(--line);color:var(--fg);padding:9px;border-radius:10px;font:inherit}
+/* CO2 toggle switch (track + knob) */
+.switch{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:.9rem}
+.switch i{width:38px;height:22px;border-radius:99px;background:#1e293b;position:relative;transition:.2s;cursor:pointer}
+.switch i::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.switch i.on{background:var(--acc)}.switch i.on::after{left:19px}
+/* tab bar */
+.tabs{display:flex;gap:6px;margin-bottom:16px}
+.tab{padding:8px 16px}.tab.active{background:var(--acc);color:#04111f;border-color:var(--acc);font-weight:600}
+/* KPI card grid */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:16px}
+/* single KPI card */
+.kpi{background:linear-gradient(135deg,#13233c,#0f1a2e);border:1px solid var(--line);border-radius:14px;padding:16px}
+.kpi small{color:var(--mut);font-size:.72rem;text-transform:uppercase;letter-spacing:.07em}
+.kpi b{display:block;font:700 1.35rem "Space Grotesk";margin-top:6px}
+/* status pill */
+.pill{padding:3px 12px;border-radius:99px;font-size:.78rem;font-weight:600}
+.pill.ok{background:#064e3b;color:#6ee7b7}.pill.bad{background:#7f1d1d;color:#fca5a5}
+/* chart row: 60/40 split */
+.grid2{display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:16px}
+@media(max-width:1100px){.grid2{grid-template-columns:1fr}}
+.card h3{margin:0 0 12px;font:600 .95rem Inter}
+/* scrollable tableau area */
+.scroll{overflow:auto;max-height:540px}
+/* tables: monospace; first column/header stay pinned */
+table{border-collapse:collapse;width:100%;font:.78rem "JetBrains Mono"}
+th,td{padding:7px 10px;text-align:center;border-bottom:1px solid #1b2a42;white-space:nowrap}
+th{color:var(--mut);position:sticky;top:0;background:#111a2b}
+td:first-child,th:first-child{text-align:left;position:sticky;left:0;background:#111a2b}
+/* error banner */
+.err{background:#3b1212;border:1px solid #7f1d1d;color:#fca5a5;padding:12px 16px;border-radius:12px;margin-bottom:14px}
+/* iteration selector row */
+.toolbar{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+select{background:#0b1424;color:var(--fg);border:1px solid var(--line);padding:8px;border-radius:10px;font:inherit}
+/* highlight for dispatch values > 0 */
+.hi{background:rgba(56,189,248,.18);color:#7dd3fc}
+/* placeholder text */
+.empty{color:var(--mut);padding:40px;text-align:center}
