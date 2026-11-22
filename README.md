@@ -1,11 +1,102 @@
-# Luzon Grid - where to edit
-| I want to change...                       | File                    | What to edit |
-|-------------------------------------------|-------------------------|--------------|
-| Demand, costs, capacities, availability   | solver.R (top)          | DEMAND, BASE_COSTS, CAPACITIES, AVAILABILITY, EMISSION_FACTORS, HEAT_FACTORS |
-| Coal min (2800), ramp (1500), hydro (8000)| solver.R, Steps 2-(3)/(4)/(5) | the numbers in b_vec lines marked EDIT |
-| Add a new constraint                      | solver.R, end of Step 2 | push a row into A_list and its RHS into b_vec (">=" form) |
-| Add a new plant group                     | solver.R + shiny/app.R PAL + web/src/App.jsx ALL/PAL | add to all constants and to the colour maps |
-| Solver iteration limit                    | solver.R, max_iters     | 200 |
-| Shiny colours/fonts                       | shiny/app.R             | PAL, bs_theme(), css string |
-| React colours/layout                      | web/src/styles.css      | :root variables, .layout, .grid2 |
-| API address/port                          | api/run_api.R, web/.env | port = 8000, VITE_API_URL |
+# ⚡ Luzon Grid Dispatch & Price Simulator
+
+Find the cheapest way to power Luzon across all six 4-hour blocks of the day. Turn different power plants on or off, add a carbon emissions limit, and see the lowest-cost energy mix and electricity prices update for each 4-hour window.
+
+> **Live Web App:** *Paste your Posit Connect Cloud URL here once published*
+
+---
+
+## Overview
+
+The **Luzon Grid Dispatch & Price Simulator** is an interactive R Shiny decision-support tool powered by a custom **Dual Simplex linear programming solver** (`solver.R`). It models 24-hour economic power dispatch across **six 4-hour time blocks** using **seven generation technologies**:
+
+* **Thermal & Baseload:** Coal, Natural Gas, Geothermal, Oil-based
+* **Renewables:** Hydro, Solar, Wind
+
+For any combination of active plant groups and optional carbon constraints, the simulator computes the least-cost generation schedule (MW), marginal electricity spot prices (PHP/MWh), and every intermediate pivot tableau of the dual simplex algorithm.
+
+---
+
+## User Manual
+
+### 1. Configure Controls (Left Sidebar)
+
+1. **Select Plant Groups:** Check or uncheck any combination of the seven energy sources (**Coal**, **Natural Gas**, **Geothermal**, **Hydro**, **Oil-based**, **Solar**, **Wind**) to include or exclude them from the grid.
+   * **Check all:** Quickly re-enables all seven plant groups.
+   * **Reset:** Clears all plant checkboxes, turns off the CO₂ cap, and restores the default limit (`165,000 t/day`).
+2. **Set an Optional Carbon Limit:**
+   * Toggle **Enable CO₂ cap** on to enforce a daily emissions ceiling.
+   * Type your desired cap in **Daily CO₂ limit (t/day)** (default: `165000`).
+3. **Run the Solver:**
+   * Click **RUN SIMULATION** (or press `Enter`) to solve the linear program and refresh all charts, tables, and simplex iterations.
+
+---
+
+### 2. Interpret the Results Tab
+
+#### Key Performance Indicators (Top Row)
+* **Status:** Displays **`OPTIMAL`** when a valid least-cost schedule is found. If your selected plants cannot meet grid demand—or if the CO₂ cap is too strict—an **`INFEASIBLE`** alert appears along with the number of iterations attempted.
+* **Total minimum cost (Z):** The minimized total daily generation cost across all six blocks, formatted in Philippine Pesos (**PHP**).
+* **Iterations:** Total number of dual simplex pivot steps required to reach optimality.
+* **LP setup:** Displays the size of the formulated linear program (`unknowns` / decision variables and `constraints`).
+
+#### Interactive Charts
+* **Dispatch by block (MW):** A stacked bar chart showing how much power (in megawatts) each energy source contributes during each 4-hour block. Hover over any bar segment to view exact MW values.
+* **Spot price per block (PHP / MWh):** A line and area chart showing the marginal system electricity price for every 4-hour window, derived from the dual shadow prices of the demand constraints.
+
+#### Summary Tables
+* **Optimal dispatch x_gt (MW):** Exact megawatt output scheduled for each active plant group across all six time blocks.
+* **Electricity spot prices (PHP / MWh):** Exact marginal spot price for each 4-hour block.
+
+---
+
+### 3. Inspect the Simplex Tableau Tab
+
+Switch to the **Simplex Tableau** tab to examine the mathematical optimization step by step:
+
+* **Iteration Selector:** Use the dropdown menu—or click **Prev** and **Next**—to move through `Iteration 0 (Initial)` up to `Iteration N (Final)`. Navigation loops continuously from the final tableau back to the initial tableau.
+* **Tableau Grid:** Displays the current basic variables (**`Basic Var`**), decision and slack variable columns, right-hand side values, and the reduced-cost objective row (**`Z'`**).
+
+---
+
+### 4. Keyboard Shortcuts
+
+| Key | Action |
+| :--- | :--- |
+| `Enter` | Runs the simulation from anywhere in the app |
+| `←` (Left Arrow) | Moves to the previous iteration (when on the **Simplex Tableau** tab) |
+| `→` (Right Arrow) | Moves to the next iteration (when on the **Simplex Tableau** tab) |
+
+---
+
+## Running the App Locally (Offline)
+
+If you have **R (4.3+)** and **RStudio** installed, you can run the simulator offline on your own machine:
+
+### Option A: Launch Directly from GitHub
+Run the following commands in your R console:
+
+```r
+install.packages(c("shiny", "bslib", "plotly"))
+shiny::runGitHub("luzon-grid-dispatch-simulator", username = "aaroncale", ref = "main")
+```
+
+### Option B: Run from a Local Clone
+1. Clone or download this repository to your computer.
+2. Open `app.R` in RStudio.
+3. Click **Run App** in the top-right corner of the editor, or run:
+   ```r
+   shiny::runApp("app.R", launch.browser = TRUE)
+   ```
+
+---
+
+## Repository Structure
+
+```text
+luzon-grid-dispatch-simulator/
+├── app.R           # Shiny UI layout, dark theme styling, Plotly visuals, and server logic
+├── solver.R        # Custom dual simplex LP solver, grid parameters, and constraint builders
+├── manifest.json   # R package dependency manifest for Posit Connect Cloud deployment
+└── README.md       # Project overview and user manual
+```
