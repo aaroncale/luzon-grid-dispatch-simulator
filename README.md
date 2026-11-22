@@ -2,7 +2,7 @@
 
 Find the cheapest way to power Luzon across all six 4-hour blocks of the day. Turn different power plants on or off, add a carbon emissions limit, and see the lowest-cost energy mix and electricity prices update for each 4-hour window.
 
-> **Live Web App:** *Paste your Posit Connect Cloud URL here once published*
+> **Live Web App:** https://01a201e3-3443-d94f-4db5-12f2cea6c5bf.share.connect.posit.cloud/
 
 ---
 
@@ -14,6 +14,19 @@ The **Luzon Grid Dispatch & Price Simulator** is an interactive R Shiny decision
 * **Renewables:** Hydro, Solar, Wind
 
 For any combination of active plant groups and optional carbon constraints, the simulator computes the least-cost generation schedule (MW), marginal electricity spot prices (PHP/MWh), and every intermediate pivot tableau of the dual simplex algorithm.
+
+---
+
+### Project Information
+
+| Detail | Information |
+| :--- | :--- |
+| **Name** | Aaron Cohen D. Cale |
+| **Section** | C-3L |
+| **Course** | CMSC 150 |
+| **Frontend** | R Shiny (`bslib` / Bootstrap 5, `plotly`, Custom CSS/JS) |
+| **Backend** | R (`solver.R` & Shiny Server) |
+| **Optimization** | Custom Dual Simplex Algorithm (`solve_dual_simplex`) |
 
 ---
 
@@ -100,3 +113,19 @@ luzon-grid-dispatch-simulator/
 ├── manifest.json   # R package dependency manifest for Posit Connect Cloud deployment
 └── README.md       # Project overview and user manual
 ```
+
+---
+
+## Notes
+
+- The Dual Simplex algorithm (`solve_dual_simplex()`) is implemented completely from scratch in base R.
+- No external optimization or linear programming packages are used.
+- The R solver module (`solver.R`) is responsible for all mathematical computations, including LP constraint construction, dual simplex pivot iterations, optimal dispatch extraction, and marginal spot pricing.
+- The R Shiny frontend (`app.R`) communicates reactively with `solver.R`, dynamically updating Plotly charts, KPI cards, and step-by-step simplex tableaus whenever inputs change.
+- The solver backend (`solver.R`) is decoupled from the Shiny UI and can be sourced and tested independently in the R console.
+
+---
+
+Developed as part of **CMSC 150 – C-3L**  
+**Aaron Cohen D. Cale**  
+University of the Philippines Los Baños
