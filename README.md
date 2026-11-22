@@ -6,17 +6,6 @@ Find the cheapest way to power Luzon across all six 4-hour blocks of the day. Tu
 
 ---
 
-## Overview
-
-The **Luzon Grid Dispatch & Price Simulator** is an interactive R Shiny decision-support tool powered by a custom **Dual Simplex linear programming solver** (`solver.R`). It models 24-hour economic power dispatch across **six 4-hour time blocks** using **seven generation technologies**:
-
-* **Thermal & Baseload:** Coal, Natural Gas, Geothermal, Oil-based
-* **Renewables:** Hydro, Solar, Wind
-
-For any combination of active plant groups and optional carbon constraints, the simulator computes the least-cost generation schedule (MW), marginal electricity spot prices (PHP/MWh), and every intermediate pivot tableau of the dual simplex algorithm.
-
----
-
 ### Project Information
 
 | Detail | Information |
@@ -27,6 +16,17 @@ For any combination of active plant groups and optional carbon constraints, the 
 | **Frontend** | R Shiny (`bslib` / Bootstrap 5, `plotly`, Custom CSS/JS) |
 | **Backend** | R (`solver.R` & Shiny Server) |
 | **Optimization** | Custom Dual Simplex Algorithm (`solve_dual_simplex`) |
+
+---
+
+## Overview
+
+The **Luzon Grid Dispatch & Price Simulator** is an interactive R Shiny decision-support tool powered by a custom **Dual Simplex linear programming solver** (`solve_dual_simplex()` in `solver.R`). It models 24-hour economic power dispatch across **six 4-hour time blocks** using **seven generation technologies**:
+
+* **Thermal & Baseload:** Coal, Natural Gas, Geothermal, Oil-based
+* **Renewables:** Hydro, Solar, Wind
+
+For any combination of active plant groups and optional carbon constraints, the simulator computes the least-cost generation schedule (MW), marginal electricity spot prices (PHP/MWh), and every intermediate pivot tableau of the dual simplex algorithm.
 
 ---
 
@@ -111,7 +111,7 @@ luzon-grid-dispatch-simulator/
 ├── app.R           # Shiny UI layout, dark theme styling, Plotly visuals, and server logic
 ├── solver.R        # Custom dual simplex LP solver, grid parameters, and constraint builders
 ├── manifest.json   # R package dependency manifest for Posit Connect Cloud deployment
-└── README.md       # Project overview and user manual
+└── README.md       # Project information, overview, and user manual
 ```
 
 ---
