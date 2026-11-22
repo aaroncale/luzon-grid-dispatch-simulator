@@ -209,7 +209,7 @@ server <- function(input, output, session) {
                        sprintf("PHP %s", formatC(res$Z_opt, format = "f", digits = 2, big.mark = ",")),
                        "peso-sign"),
                    kpi("Iterations", res$iterations, "rotate"),
-                   kpi("LP setup", sprintf("%d unknowns · %d constraints", res$n_vars, res$n_constraints), "table-cells"))
+                   kpi("Linear Programming setup", sprintf("%d unknowns · %d constraints", res$n_vars, res$n_constraints), "table-cells"))
   })
   
   ok <- function(res) !is.null(res) && res$status != "INFEASIBLE"   # TRUE when there is a usable solution
