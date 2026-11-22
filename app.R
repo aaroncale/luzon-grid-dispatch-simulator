@@ -50,8 +50,12 @@ theme <- bs_theme(
 css <- "
 /* page background gradient */
 body{background:radial-gradient(1200px 600px at 10% -10%,#12263f 0%,#0b1220 55%)!important}
+/* floating particle background canvas */
+#particle-canvas{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+/* keep header, sidebar, and main content layered cleanly above particles */
+.bslib-sidebar-layout,.bslib-page-title,header,.main{position:relative;z-index:1}
 /* translucent rounded cards and sidebar */
-.card,.bslib-sidebar-layout>.sidebar{background:rgba(17,26,43,.85)!important;border:1px solid #223049!important;border-radius:14px}
+.card,.bslib-sidebar-layout>.sidebar{background:rgba(17,26,43,.82)!important;backdrop-filter:blur(4px);border:1px solid #223049!important;border-radius:14px}
 /* title bar with icon */
 .brand{display:flex;align-items:center;gap:.6rem;font-family:'Space Grotesk';font-weight:700;font-size:3.15rem}
 .brand i{color:#38bdf8}.sub{color:#94a3b8;font-size:.8rem;margin-bottom:1rem;text-align:justify}
@@ -59,7 +63,7 @@ body{background:radial-gradient(1200px 600px at 10% -10%,#12263f 0%,#0b1220 55%)
 .btn-run{width:100%;font-weight:600;letter-spacing:.05em;background:linear-gradient(90deg,#0ea5e9,#6366f1);border:0}
 .btn-run:hover{filter:brightness(1.12)}
 /* KPI boxes */
-.bslib-value-box{background:linear-gradient(135deg,#13233c,#0f1a2e)!important;border:1px solid #223049!important}
+.bslib-value-box{background:linear-gradient(135deg,rgba(19,35,60,.85),rgba(15,26,46,.85))!important;backdrop-filter:blur(4px);border:1px solid #223049!important}
 /* OPTIMAL / INFEASIBLE pill */
 .status-pill{display:inline-block;padding:.2rem .7rem;border-radius:99px;font-size:.75rem;font-weight:600}
 .ok{background:#064e3b;color:#6ee7b7}.bad{background:#7f1d1d;color:#fca5a5}
@@ -68,7 +72,6 @@ table{font-family:'JetBrains Mono';font-size:.78rem;color:#e2e8f0!important}
 .table>:not(caption)>*>*{background:transparent!important;color:#e2e8f0!important;border-color:#1e293b!important}
 .form-check-input:checked{background-color:#38bdf8;border-color:#38bdf8}
 
-.form-check-input:checked{background-color:#38bdf8;border-color:#38bdf8}
 /* hide up/down arrows on the CO2 limit input */
 #co2_limit::-webkit-outer-spin-button,
 #co2_limit::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
@@ -131,8 +134,78 @@ ui <- page_sidebar(                                   # page = left sidebar + ma
           }
         }
       });
+
+      // Floating particles background animation
+      $(function() {
+        const canvas = document.getElementById('particle-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const particleCount = 55;
+        const colors = [
+          'rgba(56, 189, 248, ',  // Sky blue (#38bdf8)
+          'rgba(99, 102, 241, ',  // Indigo (#6366f1)
+          'rgba(52, 211, 153, ',  // Emerald (#34d399)
+          'rgba(250, 204, 21, '   // Solar yellow (#facc15)
+        ];
+
+        function resizeCanvas() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+          constructor() {
+            this.reset(true);
+          }
+          reset(initial = false) {
+            this.x = Math.random() * canvas.width;
+            this.y = initial ? Math.random() * canvas.height : canvas.height + 10;
+            this.radius = Math.random() * 2.2 + 0.8;
+            this.speedY = -(Math.random() * 0.45 + 0.15);
+            this.speedX = (Math.random() - 0.5) * 0.3;
+            this.alpha = Math.random() * 0.5 + 0.15;
+            this.colorBase = colors[Math.floor(Math.random() * colors.length)];
+          }
+          update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.y < -10 || this.x < -10 || this.x > canvas.width + 10) {
+              this.reset(false);
+            }
+          }
+          draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.colorBase + this.alpha + ')';
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = this.colorBase + '0.6)';
+            ctx.fill();
+          }
+        }
+
+        for (let i = 0; i < particleCount; i++) {
+          particles.push(new Particle());
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          for (let p of particles) {
+            p.update();
+            p.draw();
+          }
+          requestAnimationFrame(animate);
+        }
+        animate();
+      });
     "))
   ),
+  
+  # Background particle layer
+  tags$canvas(id = "particle-canvas"),
   
   sidebar = sidebar(                                  # ---- left control panel ----
     width = 330,                                      # sidebar width in pixels
