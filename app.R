@@ -41,6 +41,33 @@ plant_choice_names <- lapply(PLANT_GROUPS, function(g) {
   )
 })
 
+# Custom inline SVG badge for Pikachu next to the brand title
+pikachu_badge <- tags$svg(
+  viewBox = "0 0 36 36",
+  width = "32",
+  height = "32",
+  style = "background:#facc15;border-radius:10px;padding:3px;flex:none;",
+  # Left ear & black tip
+  tags$path(d = "M10 15 L4 3 L14 11 Z", fill = "#facc15", stroke = "#0a0c16", `stroke-width` = "1.6", `stroke-linejoin` = "round"),
+  tags$path(d = "M6.5 8 L4 3 L9.5 7.3 Z", fill = "#0a0c16"),
+  # Right ear & black tip
+  tags$path(d = "M26 15 L32 3 L22 11 Z", fill = "#facc15", stroke = "#0a0c16", `stroke-width` = "1.6", `stroke-linejoin` = "round"),
+  tags$path(d = "M29.5 8 L32 3 L26.5 7.3 Z", fill = "#0a0c16"),
+  # Face outline
+  tags$ellipse(cx = "18", cy = "22", rx = "11.5", ry = "9.5", fill = "#facc15", stroke = "#0a0c16", `stroke-width` = "1.6"),
+  # Eyes + white highlights
+  tags$circle(cx = "13.5", cy = "20", r = "1.7", fill = "#0a0c16"),
+  tags$circle(cx = "22.5", cy = "20", r = "1.7", fill = "#0a0c16"),
+  tags$circle(cx = "14", cy = "19.4", r = "0.6", fill = "#ffffff"),
+  tags$circle(cx = "23", cy = "19.4", r = "0.6", fill = "#ffffff"),
+  # Red cheeks
+  tags$circle(cx = "10.2", cy = "24", r = "2.2", fill = "#ef4444"),
+  tags$circle(cx = "25.8", cy = "24", r = "2.2", fill = "#ef4444"),
+  # Nose & smile
+  tags$circle(cx = "18", cy = "22.2", r = "0.8", fill = "#0a0c16"),
+  tags$path(d = "M15 24.8 Q16.5 26.5 18 24.8 Q19.5 26.5 21 24.8", fill = "none", stroke = "#0a0c16", `stroke-width` = "1.4", `stroke-linecap` = "round")
+)
+
 
 # --- THEME: global look of the app -------------------------------------
 theme <- bs_theme(
@@ -259,7 +286,7 @@ body{
 
 # --- USER INTERFACE -----------------------------------------------------
 ui <- page_navbar(                                    # page = top pill navigation + full-width dashboard
-  title = div(class = "brand", icon("bolt"), "PikaChoose"),   # logo text (top left)
+  title = div(class = "brand", pikachu_badge, "PikaChoose"),  # Pikachu SVG + logo text (top left)
   id = "main_nav", window_title = "Luzon Grid Dispatch & Price Simulator",
   theme = theme, fillable = FALSE,                    # apply theme; let the page scroll normally
   header = tagList(
