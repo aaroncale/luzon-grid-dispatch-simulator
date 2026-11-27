@@ -26,7 +26,6 @@ PLANT_ICONS <- c(
 )
 
 # Build icon + text labels for the sidebar checkboxes
-# (each icon now sits in a small round badge tinted with the group colour, like the card list in the design)
 plant_choice_names <- lapply(PLANT_GROUPS, function(g) {
   tags$span(
     class = "plant-chip",
@@ -146,7 +145,7 @@ body{
 }
 .card-header,.card-body,.tab-pane{background-color:transparent!important}
 .card-header{border:0!important;font-family:'Sora';font-weight:500;font-size:1.05rem;padding:1.15rem 1.35rem .35rem}
-.card-body{padding:.6rem 1.35rem 1.2rem}
+.card-body{padding:.6rem 1.35rem 1.2rem;display:flex;flex-direction:column}
 .panel-hint{color:var(--muted);font-size:.75rem;margin:-.1rem 0 .8rem}
 .row-gap{margin-bottom:1rem}
 
@@ -177,13 +176,30 @@ body{
 .form-label,label.control-label{color:#c9ccdf;font-size:.82rem;font-weight:500}
 .form-check-input:checked{background-color:var(--lav);border-color:var(--lav)}
 
-/* ---------- TABLES ---------- */
-table{font-family:inherit;font-variant-numeric:tabular-nums;font-size:.8rem;color:var(--text)!important;width:100%}
-.table>:not(caption)>*>*{background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;padding:.65rem .6rem}
-.table thead th{color:var(--muted)!important;font-weight:500;font-size:.72rem}
-.table tbody td:first-child{font-weight:600;text-align:left!important}
-.price-tbl .table tbody td:first-child{text-align:center!important}
-.table-scroll{overflow-x:auto}
+/* ---------- TABLES (FULL-WIDTH STRETCH) ---------- */
+.table-scroll{overflow-x:auto;width:100%;flex:1;display:flex;flex-direction:column;justify-content:center}
+.table-scroll .shiny-html-output{width:100%}
+.table-scroll table{
+  font-family:inherit;font-variant-numeric:tabular-nums;font-size:.85rem;
+  color:var(--text)!important;width:100%!important;table-layout:fixed;margin-bottom:0!important;
+}
+.table>:not(caption)>*>*{background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;padding:.72rem .5rem}
+.table thead th{color:var(--muted)!important;font-weight:600;font-size:.78rem}
+
+/* Dispatch table: first column wider for plant names, left-aligned */
+.dispatch-tbl table th:first-child,
+.dispatch-tbl table td:first-child{width:24%;text-align:left!important;padding-left:.4rem}
+.dispatch-tbl table tbody td:first-child{font-weight:600}
+
+/* Price table: equal-width columns across the full card, larger readable text */
+.price-tbl table th,
+.price-tbl table td{text-align:center!important;padding:.85rem .5rem}
+.price-tbl table tbody td{font-size:1.05rem;font-weight:600;color:var(--lav)!important}
+.price-tbl table tbody td:first-child{text-align:center!important}
+
+/* Tableau table: keep auto layout so wide horizontal scrolling works normally */
+#tableau_table table{width:max-content!important;min-width:100%;table-layout:auto;font-size:.8rem}
+#tableau_table table tbody td:first-child{font-weight:600;text-align:left!important}
 
 /* ---------- SIMPLEX TABLEAU CONTROLS ---------- */
 .btn-circ{background:var(--card2)!important;color:var(--text)!important;border:1px solid var(--line)!important;border-radius:99px;padding:.5rem 1.1rem}
@@ -365,9 +381,9 @@ ui <- page_navbar(                                    # page = top pill navigati
                                             card(card_header("Energy mix of the day"), plotlyOutput("mix_plot", height = 340))),
                              
                              layout_columns(col_widths = c(5, 7), fill = FALSE, class = "row-gap",   # price chart + unknowns table
-                                            card(card_header("Spot price per block (PHP / MWh)"), plotlyOutput("price_plot", height = 320)),
+                                            card(card_header("Spot price per block (PHP / MWh)"), plotlyOutput("price_plot", height = 355)),
                                             card(card_header("Unknowns x_gt (MW)"),
-                                                 div(class = "table-scroll", tableOutput("dispatch_table")))),
+                                                 div(class = "table-scroll dispatch-tbl", tableOutput("dispatch_table")))),
                              
                              card(card_header("Prices of the demand constraints (PHP / MWh)"),
                                   div(class = "table-scroll price-tbl", tableOutput("price_table")))
@@ -528,14 +544,14 @@ server <- function(input, output, session) {
     }
     colnames(df)[1] <- "Plant Group"                  # nicer header
     df
-  }, align = "c", striped = TRUE, hover = TRUE)
+  }, align = "c", striped = TRUE, hover = TRUE, width = "100%")
   
   # One-row price table
   output$price_table <- renderTable({
     res <- sim_results(); if (!ok(res)) return(NULL)
     df <- data.frame(matrix(format(round(res$block_prices, 2), big.mark = ","), nrow = 1))
     colnames(df) <- BLOCKS; df
-  }, align = "c")
+  }, align = "c", width = "100%")
   
   # Dropdown + circular Prev/Next buttons (starts on the Final tableau)
   output$iter_selector_ui <- renderUI({
