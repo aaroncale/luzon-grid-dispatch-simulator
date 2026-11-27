@@ -405,11 +405,8 @@ ui <- page_navbar(                                    # page = top pill navigati
                            
                            # ---------------- LEFT: results ----------------
                            div(
-                             layout_columns(col_widths = c(7, 5), fill = FALSE, class = "row-gap",   # hero card + two stat tiles
-                                            uiOutput("hero_card"),                                 # dynamically green (OPTIMAL) or red (INFEASIBLE)
-                                            uiOutput("side_kpis")),                                # iterations + LP setup tiles
-                             
-                             uiOutput("results_section")                                           # hidden automatically when INFEASIBLE
+                             uiOutput("top_kpis"),                                                 # hero card + KPI tiles (tiles hidden only when 0 plants were run)
+                             uiOutput("results_section")                                           # hidden automatically when 0 plants were run or INFEASIBLE
                            ),
                            
                            # ---------------- RIGHT: control panels (were the sidebar) ----------------
@@ -444,16 +441,20 @@ server <- function(input, output, session) {
     updateCheckboxGroupInput(session, "selected_groups", selected = PLANT_GROUPS)
   })
   
-  # "Reset" button: uncheck all plant groups and restore CO2 defaults
+  # "Reset" button: uncheck all plant groups and restore CO2 defaults without clearing the current simulation
   observeEvent(input$btn_reset, {
     updateCheckboxGroupInput(session, "selected_groups", selected = character(0))  # uncheck all
     update_switch("co2_toggle", value = FALSE, session = session)                   # CO2 off
     updateNumericInput(session, "co2_limit", value = 165000)                        # default limit
   })
   
-  # Runs the solver only when RUN is clicked (and once at startup because ignoreNULL = FALSE)
+  # Tracks whether the most recent Run Simulation had 0 plants selected
+  last_run_empty <- reactiveVal(FALSE)
+  
+  # Runs the solver only when RUN is clicked or Enter is pressed (and once at startup because ignoreNULL = FALSE)
   sim_results <- eventReactive(input$btn_run, {
     if (length(input$selected_groups) == 0) {
+      last_run_empty(TRUE)
       showNotification("Please select at least one plant group.", type = "error")
       return(NULL)
     }
@@ -461,6 +462,7 @@ server <- function(input, output, session) {
       showNotification("CO2 cap limit must be a positive number.", type = "error")
       return(NULL)
     }
+    last_run_empty(FALSE)
     solve_dual_simplex(input$selected_groups, input$co2_toggle, input$co2_limit)
   }, ignoreNULL = FALSE)
   
@@ -472,10 +474,23 @@ server <- function(input, output, session) {
         div(class = "t-value", value),
         div(class = "t-sub", sub))
   
-  # Hero card container (switches to red when INFEASIBLE)
+  # Top KPI row: hides side_kpis ONLY when the last run had 0 plants selected; keeps them when >= 1 plant was run (even if INFEASIBLE)
+  output$top_kpis <- renderUI({
+    if (last_run_empty()) {
+      div(class = "row-gap", uiOutput("hero_card"))
+    } else {
+      layout_columns(
+        col_widths = c(7, 5), fill = FALSE, class = "row-gap",
+        uiOutput("hero_card"),
+        uiOutput("side_kpis")
+      )
+    }
+  })
+  
+  # Hero card container (switches to red when the last run had 0 plants selected or was INFEASIBLE)
   output$hero_card <- renderUI({
     res <- sim_results()
-    is_bad <- !is.null(res) && res$status == "INFEASIBLE"
+    is_bad <- last_run_empty() || (!is.null(res) && res$status == "INFEASIBLE")
     div(
       class = if (is_bad) "hero hero-bad" else "hero",
       div(
@@ -494,6 +509,7 @@ server <- function(input, output, session) {
   
   # Status pill in the corner of the hero card
   output$hero_status <- renderUI({
+    if (last_run_empty()) return(span(class = "status-pill bad", "NO PLANTS"))
     res <- sim_results()                              # latest solver output
     if (is.null(res)) return(span(class = "status-pill idle", "READY"))
     if (res$status == "INFEASIBLE") return(span(class = "status-pill bad", "INFEASIBLE"))
@@ -502,6 +518,7 @@ server <- function(input, output, session) {
   
   # Big number on the hero card: total minimum cost
   output$hero_value <- renderUI({
+    if (last_run_empty()) return(div(class = "hero-value", "Infeasible"))
     res <- sim_results()
     if (is.null(res)) return(div(class = "hero-value", "—"))
     if (res$status == "INFEASIBLE") return(div(class = "hero-value", "Infeasible"))
@@ -510,8 +527,9 @@ server <- function(input, output, session) {
         tags$sup("PHP"))
   })
   
-  # Small caption under the hero number (also carries the infeasible message)
+  # Small caption under the hero number (also carries the infeasible / empty message)
   output$hero_note <- renderUI({
+    if (last_run_empty()) return(div(class = "hero-note", "No plant group selected. Tick at least one plant group and press RUN SIMULATION."))
     res <- sim_results()
     if (is.null(res)) return(div(class = "hero-note", "Configure inputs and press RUN SIMULATION."))
     if (res$status == "INFEASIBLE")
@@ -534,9 +552,9 @@ server <- function(input, output, session) {
              sprintf("%d constraints", res$n_constraints), chip = "LP", chip_class = "chip-lav"))
   })
   
-  ok <- function(res) !is.null(res) && res$status != "INFEASIBLE"   # TRUE when there is a usable solution
+  ok <- function(res) !last_run_empty() && !is.null(res) && res$status != "INFEASIBLE"   # TRUE when plants were run and solution is OPTIMAL
   
-  # Charts and tables container: only renders when a feasible OPTIMAL solution exists
+  # Charts and tables container: only renders when plants were run and an OPTIMAL solution exists
   output$results_section <- renderUI({
     res <- sim_results()
     req(ok(res))
@@ -617,7 +635,7 @@ server <- function(input, output, session) {
   
   # Dropdown + circular Prev/Next buttons (starts on the Final tableau)
   output$iter_selector_ui <- renderUI({
-    res <- sim_results(); if (is.null(res)) return(NULL)
+    res <- sim_results(); if (is.null(res) || last_run_empty()) return(NULL)
     n <- length(res$history)
     labels <- paste("Iteration", 0:(n - 1))
     labels[1] <- "Iteration 0 (Initial)"
@@ -650,7 +668,7 @@ server <- function(input, output, session) {
   
   # Show the chosen tableau
   output$tableau_table <- renderTable({
-    res <- sim_results(); req(input$selected_iter); if (is.null(res)) return(NULL)
+    res <- sim_results(); req(input$selected_iter); if (is.null(res) || last_run_empty()) return(NULL)
     h <- res$history[[as.numeric(input$selected_iter)]]            # chosen snapshot
     df <- as.data.frame(h$tableau); df[] <- lapply(df, function(col) sprintf("%.2f", col))  # 2-decimals text
     df <- cbind(Basic_Var = c(h$basic_vars, "Z'"), df)             # first column = basic variable of each row
