@@ -107,6 +107,15 @@ body{
   position:relative;overflow:hidden;border-radius:28px;padding:1.6rem 1.8rem;min-height:290px;
   display:flex;flex-direction:column;justify-content:space-between;color:#0b1220;
   background:linear-gradient(115deg,#7be3b1 0%,#a7ec86 48%,#d4f26a 100%);
+  transition:background .3s ease, color .3s ease;
+}
+.hero.hero-bad{
+  background:linear-gradient(115deg,#ff7a8a 0%,#f43f5e 52%,#e11d48 100%);
+  color:#fff;
+}
+.hero.hero-bad .pill-light{
+  background:rgba(255,255,255,.92);
+  color:#2a0f16;
 }
 .hero::after{content:'';position:absolute;right:-70px;bottom:-110px;width:380px;height:380px;border-radius:50%;
   background:rgba(255,255,255,.2);pointer-events:none}
@@ -117,7 +126,7 @@ body{
 .hero-label{font-family:'Sora';font-weight:500;font-size:1.15rem}
 .hero-value{font-family:'Sora';font-weight:600;letter-spacing:-.02em;font-size:clamp(2rem,3.6vw,3.3rem);line-height:1.1;margin-top:.8rem}
 .hero-value sup{font-size:.38em;font-weight:500;margin-left:.3rem;top:-.9em}
-.hero-note{font-size:.78rem;opacity:.75;margin-top:.5rem;max-width:440px}
+.hero-note{font-size:.78rem;opacity:.85;margin-top:.5rem;max-width:440px}
 .hero-actions{display:flex;gap:.6rem;align-items:center;margin-top:1.4rem;flex-wrap:wrap}
 .btn-pill-dark{background:#0a0c16!important;color:#fff!important;border:0!important;border-radius:99px;
   padding:.7rem 1.7rem;font-weight:600;letter-spacing:.01em}
@@ -215,7 +224,7 @@ body{
 #co2_limit{-moz-appearance:textfield}
 
 /* Custom auto-hiding black & lavender scrollbars */
-- {
+* {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
 }
@@ -370,14 +379,7 @@ ui <- page_navbar(                                    # page = top pill navigati
                            # ---------------- LEFT: results ----------------
                            div(
                              layout_columns(col_widths = c(7, 5), fill = FALSE, class = "row-gap",   # hero card + two stat tiles
-                                            div(class = "hero",
-                                                div(class = "hero-top",
-                                                    span(class = "hero-label", "Total minimum cost (Z)"),
-                                                    uiOutput("hero_status", inline = TRUE)),
-                                                div(uiOutput("hero_value"), uiOutput("hero_note")),
-                                                div(class = "hero-actions",
-                                                    actionButton("btn_run", "Run simulation", icon = icon("play"), class = "btn-pill-dark"),
-                                                    span(class = "pill-light", icon("clock"), "6 blocks · 4 h each"))),
+                                            uiOutput("hero_card"),                                 # dynamically green (OPTIMAL) or red (INFEASIBLE)
                                             uiOutput("side_kpis")),                                # iterations + LP setup tiles
                              
                              layout_columns(col_widths = c(7, 5), fill = FALSE, class = "row-gap",   # row of two cards, 7/12 and 5/12 wide
@@ -452,6 +454,26 @@ server <- function(input, output, session) {
             if (!is.null(chip)) span(class = paste("chip", chip_class), chip)),
         div(class = "t-value", value),
         div(class = "t-sub", sub))
+  
+  # Hero card container (switches to red when INFEASIBLE)
+  output$hero_card <- renderUI({
+    res <- sim_results()
+    is_bad <- !is.null(res) && res$status == "INFEASIBLE"
+    div(
+      class = if (is_bad) "hero hero-bad" else "hero",
+      div(
+        class = "hero-top",
+        span(class = "hero-label", "Total minimum cost (Z)"),
+        uiOutput("hero_status", inline = TRUE)
+      ),
+      div(uiOutput("hero_value"), uiOutput("hero_note")),
+      div(
+        class = "hero-actions",
+        actionButton("btn_run", "Run simulation", icon = icon("play"), class = "btn-pill-dark"),
+        span(class = "pill-light", icon("clock"), "6 blocks · 4 h each")
+      )
+    )
+  })
   
   # Status pill in the corner of the hero card
   output$hero_status <- renderUI({
