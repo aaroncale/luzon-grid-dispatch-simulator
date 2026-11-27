@@ -1,7 +1,11 @@
 # =====================================================================
-# app.R  -  ADVANCED SHINY USER INTERFACE
+# app.R  -   SHINY USER INTERFACE
 # Run with:  shiny::runApp("app.R", launch.browser = TRUE)
 # Structure: libraries -> theme/CSS -> ui -> server
+# =====================================================================
+# Cale, Aaron Cohen D.
+# 2025 - 15680
+# CMSC 150 - E-5L
 # =====================================================================
 
 library(shiny)    # core web framework

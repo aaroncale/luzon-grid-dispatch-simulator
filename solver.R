@@ -1,17 +1,9 @@
 # =====================================================================
-# solver.R  -  PROBLEM DATA + DUAL SIMPLEX SOLVER (shared by both UIs)
+# solver.R  -  PROBLEM DATA + DUAL SIMPLEX SOLVER
 # =====================================================================
-# THE MATH IN ONE PICTURE
-#   Primal (what we really want):  minimise  sum_{g,t} 4 * c_gt * x_gt     (cost of the day)
-#                                  subject to  A x >= b ,  x >= 0
-#     x_gt = MW dispatched by plant group g in time block t (each block = 4 hours)
-#     Every constraint is written in ">=" form (that is why capacity rows are negated).
-#   Dual (what the code actually solves):  maximise  b' S
-#                                          subject to  A' S <= 4c ,  S >= 0
-#     S_i = shadow price of constraint i. The dual is already in "<=" form with a
-#     non-negative RHS (4c), so plain simplex starts from an all-slack basis.
-#   Reading the answer:  x_gt  = bottom-row entry under dual slack s_gt
-#                        price = S_demand_t / 4   (PHP per MWh)
+# Cale, Aaron Cohen D.
+# 2025 - 15680
+# CMSC 150 - E-5L
 # =====================================================================
 
 # --- PROBLEM CONSTANTS ------------------------------------------------
