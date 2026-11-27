@@ -182,6 +182,7 @@ table{font-family:inherit;font-variant-numeric:tabular-nums;font-size:.8rem;colo
 .table>:not(caption)>*>*{background:transparent!important;color:var(--text)!important;border-color:var(--line)!important;padding:.65rem .6rem}
 .table thead th{color:var(--muted)!important;font-weight:500;font-size:.72rem}
 .table tbody td:first-child{font-weight:600;text-align:left!important}
+.price-tbl .table tbody td:first-child{text-align:center!important}
 .table-scroll{overflow-x:auto}
 
 /* ---------- SIMPLEX TABLEAU CONTROLS ---------- */
@@ -194,7 +195,7 @@ table{font-family:inherit;font-variant-numeric:tabular-nums;font-size:.8rem;colo
 #co2_limit{-moz-appearance:textfield}
 
 /* Custom auto-hiding black & lavender scrollbars */
-* {
+- {
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
 }
@@ -229,7 +230,7 @@ table{font-family:inherit;font-variant-numeric:tabular-nums;font-size:.8rem;colo
 
 # --- USER INTERFACE -----------------------------------------------------
 ui <- page_navbar(                                    # page = top pill navigation + full-width dashboard
-  title = div(class = "brand", icon("bolt"), "luzongrid"),   # logo text (top left)
+  title = div(class = "brand", icon("bolt"), "PikaChoose"),   # logo text (top left)
   id = "main_nav", window_title = "Luzon Grid Dispatch & Price Simulator",
   theme = theme, fillable = FALSE,                    # apply theme; let the page scroll normally
   header = tagList(
@@ -363,13 +364,13 @@ ui <- page_navbar(                                    # page = top pill navigati
                                             card(card_header("Dispatch by block (MW)"), plotlyOutput("dispatch_plot", height = 340)),
                                             card(card_header("Energy mix of the day"), plotlyOutput("mix_plot", height = 340))),
                              
-                             layout_columns(col_widths = c(5, 7), fill = FALSE, class = "row-gap",   # price chart + price table
-                                            card(card_header("Spot price per block (PHP / MWh)"), plotlyOutput("price_plot", height = 300)),
-                                            card(card_header("Prices of the demand constraints (PHP / MWh)"),
-                                                 div(class = "table-scroll", tableOutput("price_table")))),
+                             layout_columns(col_widths = c(5, 7), fill = FALSE, class = "row-gap",   # price chart + unknowns table
+                                            card(card_header("Spot price per block (PHP / MWh)"), plotlyOutput("price_plot", height = 320)),
+                                            card(card_header("Unknowns x_gt (MW)"),
+                                                 div(class = "table-scroll", tableOutput("dispatch_table")))),
                              
-                             card(card_header("Unknowns x_gt (MW)"),
-                                  div(class = "table-scroll", tableOutput("dispatch_table")))
+                             card(card_header("Prices of the demand constraints (PHP / MWh)"),
+                                  div(class = "table-scroll price-tbl", tableOutput("price_table")))
                            ),
                            
                            # ---------------- RIGHT: control panels (were the sidebar) ----------------
