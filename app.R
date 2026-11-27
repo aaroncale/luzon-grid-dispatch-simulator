@@ -382,17 +382,7 @@ ui <- page_navbar(                                    # page = top pill navigati
                                             uiOutput("hero_card"),                                 # dynamically green (OPTIMAL) or red (INFEASIBLE)
                                             uiOutput("side_kpis")),                                # iterations + LP setup tiles
                              
-                             layout_columns(col_widths = c(7, 5), fill = FALSE, class = "row-gap",   # row of two cards, 7/12 and 5/12 wide
-                                            card(card_header("Dispatch by block (MW)"), plotlyOutput("dispatch_plot", height = 340)),
-                                            card(card_header("Energy mix of the day"), plotlyOutput("mix_plot", height = 340))),
-                             
-                             layout_columns(col_widths = c(5, 7), fill = FALSE, class = "row-gap",   # price chart + unknowns table
-                                            card(card_header("Spot price per block (PHP / MWh)"), plotlyOutput("price_plot", height = 355)),
-                                            card(card_header("Unknowns x_gt (MW)"),
-                                                 div(class = "table-scroll dispatch-tbl", tableOutput("dispatch_table")))),
-                             
-                             card(card_header("Prices of the demand constraints (PHP / MWh)"),
-                                  div(class = "table-scroll price-tbl", tableOutput("price_table")))
+                             uiOutput("results_section")                                           # hidden automatically when INFEASIBLE
                            ),
                            
                            # ---------------- RIGHT: control panels (were the sidebar) ----------------
@@ -518,6 +508,25 @@ server <- function(input, output, session) {
   })
   
   ok <- function(res) !is.null(res) && res$status != "INFEASIBLE"   # TRUE when there is a usable solution
+  
+  # Charts and tables container: only renders when a feasible OPTIMAL solution exists
+  output$results_section <- renderUI({
+    res <- sim_results()
+    req(ok(res))
+    tagList(
+      layout_columns(col_widths = c(7, 5), fill = FALSE, class = "row-gap",   # row of two cards, 7/12 and 5/12 wide
+                     card(card_header("Dispatch by block (MW)"), plotlyOutput("dispatch_plot", height = 340)),
+                     card(card_header("Energy mix of the day"), plotlyOutput("mix_plot", height = 340))),
+      
+      layout_columns(col_widths = c(5, 7), fill = FALSE, class = "row-gap",   # price chart + unknowns table
+                     card(card_header("Spot price per block (PHP / MWh)"), plotlyOutput("price_plot", height = 355)),
+                     card(card_header("Unknowns x_gt (MW)"),
+                          div(class = "table-scroll dispatch-tbl", tableOutput("dispatch_table")))),
+      
+      card(card_header("Prices of the demand constraints (PHP / MWh)"),
+           div(class = "table-scroll price-tbl", tableOutput("price_table")))
+    )
+  })
   
   # Shared dark styling applied to every plotly chart
   dark <- function(p) p |> layout(paper_bgcolor = "rgba(0,0,0,0)", plot_bgcolor = "rgba(0,0,0,0)",  # transparent
